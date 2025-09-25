@@ -1,0 +1,38 @@
+[project]
+name = "bookloan"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Jonatas Oliveira",email = "contact@jonatasoliveira.dev"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django (>=5.2.6,<6.0.0)",
+    "django-extensions (>=4.1,<5.0)",
+    "dynaconf[yaml] (>=3.2.11,<4.0.0)",
+    "python-decouple (>=3.8,<4.0)",
+    "psycopg2-binary (>=2.9.10,<3.0.0)",
+    "djangorestframework (>=3.16.1,<4.0.0)",
+    "markdown (>=3.9,<4.0)",
+    "django-filter (>=25.1,<26.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+factory-boy = "^3.3.3"
+faker = "^37.8.0"
+pytest-django = "^4.11.1"
+pytest-cov = "^7.0.0"
+pytest-xdist = "^3.8.0"
+black = "^25.9.0"
+flake8 = "^7.3.0"
+isort = "^6.0.1"
+pre-commit = "^4.3.0"
+ipython = "^9.5.0"
+

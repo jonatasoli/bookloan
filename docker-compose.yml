@@ -1,0 +1,26 @@
+services:
+  # web:
+  #   build: .
+  #   volumes:
+  #     - ./src:/app/src
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - DEBUG=True
+  #     - PYTHONPATH=/app/src
+  #   depends_on:
+  #     - db
+
+  db:
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=bookloan
+      - POSTGRES_USER=postgres_user
+      - POSTGRES_PASSWORD=pass123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:

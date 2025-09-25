@@ -1,0 +1,234 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="{% static 'admin/favicon.ico' %}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BookLoan Administration</title>
+    
+    <!-- CSRF Token for API calls -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="{% url 'api:api_token_auth' %}">
+    
+    <!-- Load Vue.js build files -->
+    {% if debug %}
+      <!-- Development mode - files served by Vite -->
+      <script type="module" src="http://localhost:3000/@vite/client"></script>
+      <script type="module" src="http://localhost:3000/src/main.js"></script>
+    {% else %}
+      <!-- Production mode - files built to static/admin -->
+      {% with css_files='admin/css/' %}
+        {% for css_file in css_files %}
+          <link rel="stylesheet" href="{% static css_file %}">
+        {% endfor %}
+      {% endwith %}
+    {% endif %}
+    
+    <style>
+      /* Loading styles */
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        flex-direction: column;
+        gap: 20px;
+      }
+      
+      .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .loading-text {
+        color: #666;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 16px;
+      }
+      
+      /* Global styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f8f9fa;
+      }
+      
+      /* Hide app until Vue is loaded */
+      #app {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      #app.loaded {
+        opacity: 1;
+      }
+      
+      /* Fallback styles */
+      .fallback {
+        display: none;
+        text-align: center;
+        padding: 50px 20px;
+        max-width: 600px;
+        margin: 100px auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+      
+      .fallback.show {
+        display: block;
+      }
+      
+      .fallback h1 {
+        color: #dc3545;
+        margin-bottom: 20px;
+      }
+      
+      .fallback p {
+        color: #666;
+        margin-bottom: 15px;
+      }
+      
+      .fallback a {
+        color: #007bff;
+        text-decoration: none;
+      }
+      
+      .fallback a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading screen -->
+    <div id="loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading BookLoan Administration...</div>
+    </div>
+    
+    <!-- Vue.js app -->
+    <div id="app"></div>
+    
+    <!-- Fallback content if Vue fails to load -->
+    <div id="fallback" class="fallback">
+      <h1>⚠️ Application Loading Error</h1>
+      <p>The administration interface failed to load properly.</p>
+      <p>This could be due to:</p>
+      <ul style="text-align: left; max-width: 400px; margin: 20px auto;">
+        <li>JavaScript is disabled in your browser</li>
+        <li>Network connectivity issues</li>
+        <li>Server configuration problems</li>
+      </ul>
+      <p>
+        Please try refreshing the page or access the 
+        <a href="/django-admin/">Django Admin</a> as a fallback.
+      </p>
+      <button onclick="window.location.reload()" style="
+        background: #007bff; 
+        color: white; 
+        border: none; 
+        padding: 10px 20px; 
+        border-radius: 5px; 
+        cursor: pointer;
+        margin-top: 20px;
+      ">
+        Reload Page
+      </button>
+    </div>
+    
+    <!-- Load JavaScript -->
+    {% if not debug %}
+      <!-- Production build files -->
+      <script>
+        // Set up global configuration
+        window.APP_CONFIG = {
+          apiUrl: '/api',
+          csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          debug: {{ debug|yesno:"true,false" }}
+        };
+      </script>
+      
+      <!-- Load built JS files -->
+      {% with js_files='admin/js/' %}
+        {% for js_file in js_files %}
+          <script type="module" src="{% static js_file %}"></script>
+        {% endfor %}
+      {% endwith %}
+    {% endif %}
+    
+    <script>
+      // Handle app loading
+      let loadTimeout;
+      
+      // Show fallback if app doesn't load within 10 seconds
+      loadTimeout = setTimeout(() => {
+        const loading = document.getElementById('loading');
+        const fallback = document.getElementById('fallback');
+        if (loading) loading.style.display = 'none';
+        if (fallback) fallback.classList.add('show');
+      }, 10000);
+      
+      // Listen for Vue app mount
+      window.addEventListener('app-mounted', () => {
+        clearTimeout(loadTimeout);
+        const loading = document.getElementById('loading');
+        const app = document.getElementById('app');
+        
+        if (loading) {
+          loading.style.opacity = '0';
+          setTimeout(() => {
+            loading.style.display = 'none';
+          }, 300);
+        }
+        
+        if (app) {
+          app.classList.add('loaded');
+        }
+      });
+      
+      // Handle errors
+      window.addEventListener('error', (e) => {
+        console.error('Application error:', e);
+        if (e.message.includes('Vue') || e.filename.includes('main.js')) {
+          clearTimeout(loadTimeout);
+          const loading = document.getElementById('loading');
+          const fallback = document.getElementById('fallback');
+          if (loading) loading.style.display = 'none';
+          if (fallback) fallback.classList.add('show');
+        }
+      });
+      
+      // Development hot reload support
+      {% if debug %}
+      if (import.meta && import.meta.hot) {
+        import.meta.hot.accept();
+      }
+      {% endif %}
+    </script>
+  </body>
+</html>
